@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glamping Trip Planner</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #111009;
+      --bg2: #1c1508;
+      --text: #f0e6d3;
+      --muted: #7a6a58;
+      --border: rgba(255,255,255,0.07);
+      --food: #D4956A;
+      --snacks: #6ABBA8;
+      --activities: #9B8FD4;
+      --tips: #D4C56A;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 20% 10%, rgba(212,149,106,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(106,187,168,0.04) 0%, transparent 50%);
+    }
+
+    /* HEADER */
+    header {
+      text-align: center;
+      padding: 60px 24px 40px;
+      border-bottom: 1px solid rgba(212,149,106,0.15);
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(212,149,106,0.07) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 5px;
+      color: var(--food);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      font-family: 'Lora', serif;
+    }
+    h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(38px, 7vw, 72px);
+      font-weight: 400;
+      color: #f5ead8;
+      line-height: 1.08;
+      letter-spacing: -1px;
+      margin-bottom: 14px;
+    }
+    .subtitle {
+      color: #8a7a6a;
+      font-size: 15px;
+      font-style: italic;
+      margin-bottom: 32px;
+    }
+    .meta {
+      display: flex;
+      justify-content: center;
+      gap: 36px;
+      flex-wrap: wrap;
+    }
+    .meta-item { text-align: center; }
+    .meta-item .ico { font-size: 22px; display: block; margin-bottom: 4px; }
+    .meta-item .lbl {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-family: 'Lora', serif;
+    }
+
+    /* TABS */
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 36px 20px 0;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: 10px 22px;
+      border-radius: 2px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      font-family: 'Lora', serif;
+      transition: all 0.25s ease;
+    }
+    .tab:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+    .tab.active-food   { border-color: var(--food);       color: var(--food);       background: rgba(212,149,106,0.08); }
+    .tab.active-snacks { border-color: var(--snacks);     color: var(--snacks);     background: rgba(106,187,168,0.08); }
+    .tab.active-activities { border-color: var(--activities); color: var(--activities); background: rgba(155,143,212,0.08); }
+
+    /* PANELS */
+    .panel { display: none; max-width: 980px; margin: 40px auto 0; padding: 0 24px; }
+    .panel.visible { display: block; animation: fadeUp 0.35s ease; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* SUBSECTION */
+    .subsection { margin-bottom: 44px; }
+    .subsection-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .subsection-header .ico { font-size: 20px; }
+    .subsection-title {
+      font-family: 'Lora', serif;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .subsection-line {
+      flex: 1;
+      height: 1px;
+    }
+    .food   .subsection-title { color: var(--food); }
+    .food   .subsection-line  { background: linear-gradient(to right, rgba(212,149,106,0.35), transparent); }
+    .snacks .subsection-title { color: var(--snacks); }
+    .snacks .subsection-line  { background: linear-gradient(to right, rgba(106,187,168,0.35), transparent); }
+    .activities .subsection-title { color: var(--activities); }
+    .activities .subsection-line  { background: linear-gradient(to right, rgba(155,143,212,0.35), transparent); }
+
+    /* CARDS GRID */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
+      gap: 12px;
+    }
+    .card {
+      padding: 18px 20px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .card:hover { background: rgba(255,255,255,0.04); transform: translateY(-2px); }
+    .food        .card { border-left: 3px solid rgba(212,149,106,0.45); }
+    .snacks      .card { border-left: 3px solid rgba(106,187,168,0.45); }
+    .activities  .card { border-left: 3px solid rgba(155,143,212,0.45); }
+    .card-name {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text);
+      margin-bottom: 7px;
+      font-family: 'Playfair Display', serif;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.65;
+      font-style: italic;
+    }
+
+    /* TIPS */
+    .tips-section {
+      max-width: 980px;
+      margin: 8px auto 0;
+      padding: 0 24px 60px;
+    }
+    .tips-header {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    }
+    .tips-title {
+      font-family: 'Lora', serif;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--tips);
+    }
+    .tips-line {
+      flex: 1; height: 1px;
+      background: linear-gradient(to right, rgba(212,197,106,0.3), transparent);
+    }
+    .tips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
+      gap: 10px;
+    }
+    .tip {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 14px 16px;
+      background: rgba(212,197,106,0.03);
+      border: 1px solid rgba(212,197,106,0.1);
+      border-radius: 2px;
+    }
+    .tip .ico { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .tip p { font-size: 13px; color: var(--muted); line-height: 1.65; font-style: italic; }
+
+    footer {
+      text-align: center;
+      padding: 20px 24px 40px;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: #3a2e20;
+      text-transform: uppercase;
+      font-family: 'Lora', serif;
+    }
+
+    @media (max-width: 500px) {
+      .meta { gap: 20px; }
+      .tab { padding: 9px 14px; font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Weekend Escape · 4 People</p>
+  <h1>Glamping Trip Planner</h1>
+  <p class="subtitle">Luxury cabin · Full kitchen · Outdoor grill · Private hot tub</p>
+  <div class="meta">
+    <div class="meta-item"><span class="ico">☀️</span><span class="lbl">65–70°F Days</span></div>
+    <div class="meta-item"><span class="ico">🌙</span><span class="lbl">35–42°F Nights</span></div>
+    <div class="meta-item"><span class="ico">👥</span><span class="lbl">Group of 4</span></div>
+    <div class="meta-item"><span class="ico">🛖</span><span class="lbl">Cabin Basecamp</span></div>
+  </div>
+</header>
+
+<nav>
+  <button class="tab active-food"  onclick="show('food',this)"       >🍳 Food &amp; Cooking</button>
+  <button class="tab"              onclick="show('snacks',this)"     >🧀 Snacks &amp; Drinks</button>
+  <button class="tab"              onclick="show('activities',this)" >🌲 Activities</button>
+</nav>
+
+<!-- FOOD PANEL -->
+<div id="food" class="panel food visible">
+
+  <div class="subsection">
+    <div class="subsection-header">
+      <span class="ico">🏠</span>
+      <span class="subsection-title">Cabin Kitchen Meals</span>
+      <div class="subsection-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-name">Cast Iron Skillet Breakfast</div><div class="card-desc">Eggs, thick-cut bacon, sautéed peppers & onions all in one pan. Easy cleanup, big flavor.</div></div>
+      <div class="card"><div class="card-name">Sheet Pan Hash Browns</div><div class="card-desc">Shredded potatoes crisped in the oven with rosemary and garlic — pairs with everything.</div></div>
+      <div class="card"><div class="card-name">Dutch Oven Chili</div><div class="card-desc">Prep it at lunch, let it simmer all afternoon. Perfect fuel after a cold evening in the hot tub.</div></div>
+      <div class="card"><div class="card-name">Pasta Bar Night</div><div class="card-desc">Boil pasta, set out 2–3 jarred sauces, toppings, and fresh bread. Low effort, crowd-pleasing.</div></div>
+      <div class="card"><div class="card-name">Morning Pancake Stack</div><div class="card-desc">Bring a good mix, add blueberries or chocolate chips. Serve with real maple syrup.</div></div>
+      <div class="card"><div class="card-name">Loaded Nachos</div><div class="card-desc">Chips, shredded cheese, jalapeños, beans — baked in the oven. Great late-night snack after the hot tub.</div></div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-header">
+      <span class="ico">🔥</span>
+      <span class="subsection-title">Grill Dinners</span>
+      <div class="subsection-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-name">Reverse-Sear Ribeyes</div><div class="card-desc">Season generously with salt and pepper. Finish on a screaming hot grill. Restaurant-quality.</div></div>
+      <div class="card"><div class="card-name">Cedar Plank Salmon</div><div class="card-desc">Soak the plank, top with a brown sugar-dill glaze, and grill low and slow.</div></div>
+      <div class="card"><div class="card-name">Smash Burgers</div><div class="card-desc">Bring 80/20 ground beef, press thin patties on the grill. Layer with American cheese and crispy onions.</div></div>
+      <div class="card"><div class="card-name">Corn on the Cob</div><div class="card-desc">Grill in husks for 15 min. Pull back, brush with butter and cotija cheese. A crowd favorite.</div></div>
+      <div class="card"><div class="card-name">Grilled Pizza</div><div class="card-desc">Store-bought dough, olive oil, fresh mozzarella, and whatever toppings you like. Cooks in under 10 min.</div></div>
+      <div class="card"><div class="card-name">S'mores Station</div><div class="card-desc">Set up a grill grate over low flame — or use long skewers. Bring flavored chocolates for a twist.</div></div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-header">
+      <span class="ico">🍽️</span>
+      <span class="subsection-title">Local Restaurant Nights</span>
+      <div class="subsection-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-name">Find the Local Diner</div><div class="card-desc">Every small town has one. Go for breakfast or lunch — best biscuits and gravy you'll ever have.</div></div>
+      <div class="card"><div class="card-name">Winery or Taproom Visit</div><div class="card-desc">Look for a local tasting room. Many rural areas have surprising craft breweries or wineries nearby.</div></div>
+      <div class="card"><div class="card-name">Farm-to-Table Dinner</div><div class="card-desc">Search for a restaurant that sources locally. Great for one special evening out.</div></div>
+      <div class="card"><div class="card-name">Grab the Local BBQ</div><div class="card-desc">Rural areas often hide legendary BBQ spots. Ask locals where they actually go — not TripAdvisor.</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SNACKS PANEL -->
+<div id="snacks" class="panel snacks">
+
+  <div class="subsection">
+    <div class="subsection-header">
+      <span class="ico">🎒</span>
+      <span class="subsection-title">Bring-Along Snacks</span>
+      <div class="subsection-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-name">Charcuterie Board Kit</div><div class="card-desc">Prosciutto, salami, 3 cheeses, olives, fig jam, crackers. Assemble at the cabin — impressive in minutes.</div></div>
+      <div class="card"><div class="card-name">Trail Mix</div><div class="card-desc">Make your own: roasted almonds, dark chocolate chips, dried cranberries, pretzels, coconut flakes.</div></div>
+      <div class="card"><div class="card-name">Popcorn Variety Pack</div><div class="card-desc">Bring 3–4 flavors (white cheddar, kettle, truffle). Perfect for cabin movie nights.</div></div>
+      <div class="card"><div class="card-name">Hummus + Veggie Sticks</div><div class="card-desc">Pre-cut carrots, celery, peppers. Pack a couple of store-bought hummus tubs.</div></div>
+      <div class="card"><div class="card-name">Protein Bars & Jerky</div><div class="card-desc">Good for walks or outdoor activities when you don't want a full meal.</div></div>
+      <div class="card"><div class="card-name">Fancy Chocolates</div><div class="card-desc">Pick up a few good bars — dark chocolate with sea salt, milk chocolate with almonds. Pairs well with wine.</div></div>
+      <div class="card"><div class="card-name">Chips & Queso Dip</div><div class="card-desc">Bring a jar of salsa and a block of Velveeta for easy melted queso on the stovetop.</div></div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-header">
+      <span class="ico">🍷</span>
+      <span class="subsection-title">Drinks to Stock</span>
+      <div class="subsection-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-name">Hot Cocoa Bar</div><div class="card-desc">Multiple mix flavors, mini marshmallows, peppermint schnapps for adults. Perfect for cold nights.</div></div>
+      <div class="card"><div class="card-name">Mulled Wine Kit</div><div class="card-desc">A jug of red wine, cinnamon sticks, cloves, orange slices. Simmer on the stovetop — smells incredible.</div></div>
+      <div class="card"><div class="card-name">Local Craft Beer</div><div class="card-desc">Stop at the nearest bottle shop and grab a variety of local brews to sample.</div></div>
+      <div class="card"><div class="card-name">Sparkling Water Cases</div><div class="card-desc">LaCroix or Topo Chico — essential for staying hydrated when you're grilling and hot-tubbing.</div></div>
+      <div class="card"><div class="card-name">Coffee Setup</div><div class="card-desc">Bring a pour-over or French press, some good beans, and creamer. Morning coffee hits different in the woods.</div></div>
+      <div class="card"><div class="card-name">Bourbon & Mixers</div><div class="card-desc">For evening cocktails around the fire. Bring simple syrup and bitters for Old Fashioneds.</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ACTIVITIES PANEL -->
+<div id="activities" class="panel activities">
+
+  <div class="subsection">
+    <div class="subsection-header">
+      <span class="ico">🌄</span>
+      <span class="subsection-title">Outdoors (Leisurely)</span>
+      <div class="subsection-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-name">Nature Walk</div><div class="card-desc">Find a flat, easy trail nearby. 1–2 miles at a casual pace. Bring a thermos of coffee.</div></div>
+      <div class="card"><div class="card-name">Birdwatching</div><div class="card-desc">Grab a free Merlin app before the trip. Sit on the porch with binoculars and see what you spot.</div></div>
+      <div class="card"><div class="card-name">Stargazing</div><div class="card-desc">Rural areas mean dark skies. Bring a blanket and check the moon phase — a new moon is ideal.</div></div>
+      <div class="card"><div class="card-name">Morning Porch Coffee</div><div class="card-desc">In 65°F weather, this is genuinely perfect. Don't underestimate the joy of doing nothing outdoors.</div></div>
+      <div class="card"><div class="card-name">Outdoor Photography Walk</div><div class="card-desc">Pick a golden hour (sunrise or sunset) and wander with your phones. Nature always cooperates.</div></div>
+      <div class="card"><div class="card-name">Hammock Reading</div><div class="card-desc">If the trees allow, string up a hammock. Bring a great book or just nap. Zero guilt.</div></div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-header">
+      <span class="ico">♨️</span>
+      <span class="subsection-title">Hot Tub Activities</span>
+      <div class="subsection-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-name">Twilight Soak</div><div class="card-desc">The best time: 7–9pm when the air is dropping toward 40°F but the tub is 102°F. Bring drinks.</div></div>
+      <div class="card"><div class="card-name">Midnight Soak</div><div class="card-desc">After dinner and a movie, slip in under the stars. Bring a bluetooth speaker.</div></div>
+      <div class="card"><div class="card-name">Morning Soak</div><div class="card-desc">35°F air, steam rising, coffee in hand. This is the whole reason you booked a hot tub.</div></div>
+      <div class="card"><div class="card-name">Hot Tub Trivia Night</div><div class="card-desc">Download a trivia app or bring cards. Waterproof playing cards are a worthy investment.</div></div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-header">
+      <span class="ico">🎲</span>
+      <span class="subsection-title">Cabin Activities</span>
+      <div class="subsection-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-name">Board Game Tournament</div><div class="card-desc">Bring Catan, Ticket to Ride, or Wingspan. Keep a running scoreboard on the whiteboard.</div></div>
+      <div class="card"><div class="card-name">Card Game Marathon</div><div class="card-desc">Poker, Rummy, or Spades. A deck of cards goes a long way. Bring poker chips.</div></div>
+      <div class="card"><div class="card-name">Movie Night</div><div class="card-desc">Download 2–3 films before the trip. Dim the lights, make popcorn, and use the TV.</div></div>
+      <div class="card"><div class="card-name">Puzzle Night</div><div class="card-desc">A 1,000-piece puzzle left on the table all weekend is oddly satisfying. Everyone contributes.</div></div>
+      <div class="card"><div class="card-name">Cook-Off Challenge</div><div class="card-desc">Split into pairs, each makes a dish with surprise pantry items. Judge on presentation and taste.</div></div>
+      <div class="card"><div class="card-name">Campfire Stories</div><div class="card-desc">Even with a cabin, a fire pit is magical. Take turns with stories — or roast marshmallows in silence.</div></div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-header">
+      <span class="ico">🏘️</span>
+      <span class="subsection-title">Town Exploration</span>
+      <div class="subsection-line"></div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-name">Antique & Thrift Shops</div><div class="card-desc">Small-town antique stores are full of gems. Budget $20 and find a souvenir that actually means something.</div></div>
+      <div class="card"><div class="card-name">Farmers Market</div><div class="card-desc">If the timing works, go Saturday morning. Fresh local produce, baked goods, and handmade crafts.</div></div>
+      <div class="card"><div class="card-name">Local History Walk</div><div class="card-desc">Most small towns have historic main streets. Walk it, read the plaques, find the oldest building.</div></div>
+      <div class="card"><div class="card-name">Bookshop Browsing</div><div class="card-desc">Independent bookshops are a treasure. Give everyone 20 min to find one book they'd recommend.</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TIPS (always visible) -->
+<div class="tips-section">
+  <div class="tips-header">
+    <span style="font-size:20px">💡</span>
+    <span class="tips-title">Pro Tips</span>
+    <div class="tips-line"></div>
+  </div>
+  <div class="tips-grid">
+    <div class="tip"><span class="ico">🌡️</span><p>Pack layers — 65°F days feel different in a breeze. Fleece + a shell jacket for evenings.</p></div>
+    <div class="tip"><span class="ico">🔌</span><p>Bring a portable speaker, power bank, and a long phone charging cable for cabin comfort.</p></div>
+    <div class="tip"><span class="ico">🛁</span><p>Hot tub etiquette: shower first, no lotions, limit sessions to 15–20 min at a stretch.</p></div>
+    <div class="tip"><span class="ico">🛒</span><p>Do one big grocery run before arriving — small town stores may have limited stock.</p></div>
+    <div class="tip"><span class="ico">📵</span><p>Cell service may be spotty. Download maps, music, movies, and restaurant menus offline.</p></div>
+    <div class="tip"><span class="ico">🌙</span><p>Temps drop fast after dark — keep a hoodie or blanket on the porch for stargazing.</p></div>
+  </div>
+</div>
+
+<footer>Good Company · Good Food · Good Weather</footer>
+
+<script>
+  function show(id, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('visible'));
+    document.querySelectorAll('.tab').forEach(t => t.className = 'tab');
+    document.getElementById(id).classList.add('visible');
+    btn.classList.add('active-' + id);
+  }
+</script>
+
+</body>
+</html>
